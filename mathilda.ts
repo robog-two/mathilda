@@ -28,19 +28,7 @@ async function cfetch(url: string, lang: string): Promise<string> {
         newURL,
         {
           headers: {
-            'Accept-Language': lang,
-            // 'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"',
-            // 'sec-ch-ua-mobile': '?1',
-            // 'sec-ch-ua-platform': '"Android"',
-            // 'sec-fetch-dest': 'document',
-            // 'sec-fetch-mode': 'navigate',
-            // 'sec-fetch-site': 'none',
-            // 'sec-fetch-user': '?1',
-            // 'sec-gpc': '1',
-            // 'upgrade-insecure-requests': '1',
-            // 'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36',
-            // 'cache-control': 'no-cache',
-            // 'accept': 'text/html',
+            'accept-language': lang,
             'cookie': cookieString(cookie)
           },
           redirect: 'manual'
@@ -289,7 +277,6 @@ router.get('/generic/product', async (ctx) => {
     const keep = ctx.request.url.searchParams.get('keep')
     if (id?.includes('proxy.wishlily.app') || id?.includes('deno.dev')) throw new Error('Infinite proxy loop!')
 
-    //http://localhost:8080/generic/product?id=https://amazon.com/Victrola-Nostalgic-Bluetooth-Turntable-Entertainment/dp/B00NQL8Z16
     // Handle known link types (a little sloppy but it shouldn't really matter)
     if (keep !== 'true') {
       if (id?.includes('amazon.com')) {
