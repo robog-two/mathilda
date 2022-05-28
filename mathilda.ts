@@ -280,7 +280,7 @@ router.get('/generic/product', async (ctx) => {
     // Handle known link types (a little sloppy but it shouldn't really matter)
     if (keep !== 'true') {
       if (id?.includes('amazon.com')) {
-        ctx.response.redirect(`${(Deno.env.get('ENVIRONMENT') === 'production' ? 'https://proxy.wishlily.app' : 'http://localhost:8080')}/amazon/product?id=/dp${id.match(/.*?h?t?t?p?s?:?\/?\/?w?w?w?.?amazon\.com\/?.*?\/(?:dp|gp)\/?a?w?\/?d?(\/[0-9A-Z]{10}).*/)?.[1]}`)
+        ctx.response.redirect(`${(Deno.env.get('ENVIRONMENT') === 'production' ? 'https://proxy.wishlily.app' : 'http://localhost:8080')}/amazon/product?id=/dp${id.match(/.*?h?t?t?p?s?:?\/?\/?w?w?w?.?amazon\.com\/?.*?\/(?:dp|gp)\/?(?:product)?a?w?\/?d?\/?(?:product)?(\/[0-9A-Z]{10}).*/)?.[1]}`)
         return
       }
       if (id?.includes('etsy.com')) {
@@ -290,7 +290,7 @@ router.get('/generic/product', async (ctx) => {
     }
 
     if (id?.includes('amazon.com')) {
-      id = `https://amazon.com/dp${id.match(/.*?h?t?t?p?s?:?\/?\/?w?w?w?.?amazon\.com\/?.*?\/(?:dp|gp)\/?a?w?\/?d?(\/[0-9A-Z]{10}).*/)?.[1]}`
+      id = `https://amazon.com/dp${id.match(/.*?h?t?t?p?s?:?\/?\/?w?w?w?.?amazon\.com\/?.*?\/(?:dp|gp)\/?(?:product)?a?w?\/?d?\/?(?:product)?(\/[0-9A-Z]{10}).*/)?.[1]}`
     }
 
     let results
