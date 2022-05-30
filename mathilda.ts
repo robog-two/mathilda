@@ -374,7 +374,7 @@ router.get('/embed', async (ctx) => {
 
     const list = (await dbResponse.json()).reverse()
 
-    ctx.response.redirect(list[0]?.cover.split('?')[0] + '?format=webp')
+    ctx.response.redirect(`https://imagecdn.app/v2/image/${encodeURIComponent(list[0]?.cover)}?format=webp`)
   } catch (e) {
     console.log(e)
     ctx.response.body = {
