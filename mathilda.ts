@@ -174,30 +174,47 @@ router.get('/amazon/product', async (ctx) => {
       price = document?.getElementsByClassName('a-price a-text-price a-size-medium apexPriceToPay')?.[0]?.getElementsByClassName('a-offscreen')?.[0]?.textContent
     }
 
-    if (price === undefined) {
-      price = document?.getElementsByClassName('a-color-price')?.[0]?.textContent
+    try {
+      if (price === undefined) {
+        price = document?.getElementsByClassName('a-color-price')?.[0]?.textContent
+      }
+
+      if (price === '$') {
+        price = document?.getElementsByClassName('swatchElement selected')?.[0]?.textContent?.match(/.*?(\$[0-9]+(?:\.|\,)[0-9][0-9])/)?.[1]
+      }
+
+      if (price === undefined) {
+        price = document?.getElementsByClassName('a-text-price')?.[0]?.textContent
+      }
+    } catch (e) {
+      console.log(e)
     }
 
-    if (price === '$') {
-      price = document?.getElementsByClassName('swatchElement selected')?.[0]?.textContent?.match(/.*?(\$[0-9]+(?:\.|\,)[0-9][0-9])/)?.[1]
-    }
+    try {
+      if (cover === undefined) {
+        cover = document?.getElementById('imgBlkFront')?.outerHTML?.match(/src=\\?"(.*?)\\?"/)?.[1]
+      }
 
-    if (cover === undefined) {
-      cover = document?.getElementById('imgBlkFront')?.outerHTML?.match(/src=\\?"(.*?)\\?"/)?.[1]
-    }
+      if (cover === undefined) {
+        cover = document?.getElementById('detailImg')?.outerHTML?.match(/src=\\?"(.*?)\\?"/)?.[1]
+      }
 
-    if (cover === undefined) {
-      cover = document?.getElementById('detailImg')?.outerHTML?.match(/src=\\?"(.*?)\\?"/)?.[1]
-    }
-
-    if (cover === undefined) {
-      cover = results?.match(/(https\:\/\/images.*?\/I\/.*?.jpg)/g)?.[0]
+      if (cover === undefined) {
+        cover = results?.match(/(https\:\/\/images.*?\/I\/.*?.jpg)/g)?.[0]
+      }
+    } catch (e) {
+      console.log(e)
     }
 
     let bkp
-    if (title === undefined || price === undefined || cover === undefined) {
-      // Sometimes amazon breaks stuff.
-      bkp = await(await fetch(`${(Deno.env.get('ENVIRONMENT') === 'production' ? 'https://proxy.wishlily.app' : 'http://localhost:8080')}/generic/product?keep=true&id=${encodeURIComponent('https://amazon.com' + id)}`)).json()
+    try {
+      if (title === undefined || price === undefined || cover === undefined) {
+        // Sometimes amazon breaks stuff.
+        bkp = await(await fetch(`${(Deno.env.get('ENVIRONMENT') === 'production' ? 'https://proxy.wishlily.app' : 'http://localhost:8080')}/generic/product?keep=true&id=${encodeURIComponent('https://amazon.com' + id)}`)).json()
+      }
+    } catch (e) {
+      // Sometimes... I break stuff
+      console.log(e)
     }
 
     ctx.response.body = {
