@@ -2,71 +2,17 @@ import { Application, Router, Status } from 'https://deno.land/x/oak@v10.6.0/mod
 import { DOMParser, HTMLDocument } from 'https://deno.land/x/deno_dom@v0.1.22-alpha/deno-dom-wasm.ts'
 import { CORS } from 'https://deno.land/x/oak_cors@v0.1.1/mod.ts'
 import { Html5Entities } from 'https://deno.land/x/html_entities@v1.0/mod.js'
+import { resolveURL } from './resolveURL.ts'
 
 const cache: Map<string, string> = new Map()
-
-function cookieString(cookies: Record<string, string>): string {
-  let string = ''
-  for (const cookie in cookies) {
-    string = `${string}${cookie}=${cookies[cookie]}; `
-  }
-  string = string.slice(0, string.length - 2)
-  return string
-}
 
 async function cfetch(url: string, lang: string): Promise<string> {
   if (cache.has(lang + url)) {
     return cache.get(lang + url) ?? ''
   } else {
-    let it: Response | undefined
-    let newURL = url
-    const cookie: Record<string, string> = {}
-    let tries = 0
-    console.log('[ ] Starting request')
-    while ((it === undefined || (it.headers.has('set-cookie') && cookie === {}) || (it.headers.has('location')) || it.status === 301 || it.status === 302) && tries < 30) {
-      it = (await fetch(
-        newURL,
-        {
-          headers: {
-            'accept-language': lang,
-            'cookie': cookieString(cookie)
-          },
-          redirect: 'manual'
-        }
-      ))
-      const loc = it.headers.get('location')
-      if ((it.status === 301 || it.status === 302) && loc) {
-        console.log(` |  Redirected to "${loc}"`)
-        newURL = loc
-      }
-
-      it.headers.forEach((cookieHeader, key) => {
-        if (key === 'set-cookie') {
-          const cookies = cookieHeader?.split('; ')
-          if (cookies) {
-            for (const eachCookie of cookies) {
-              if (eachCookie.includes('=')) {
-                const newCookie = eachCookie?.split('=')
-                if (!['path','expires', 'domain', 'samesite', 'max-age', 'mode', 'dur', '', ' '].includes(newCookie[0].toString().toLocaleLowerCase()) && newCookie[0] !== undefined && newCookie[1] !== undefined) {
-                  if (newCookie) {
-                    cookie[newCookie[0]] = newCookie[1]
-                    console.log(` |  Cookie "${newCookie[0]}" set to "${newCookie[1]}"`)
-                  }
-                }
-              }
-            }
-          }
-        }
-      })
-      tries++
-    }
-    if (tries === 30) {
-      console.log(`[ ] Bailed!`)
-    } else {
-      console.log(`[X] Finished request!`)
-    }
-    if (it === undefined) throw new Error('Bail - unable to handle URL shenanigans')
-    const text = await it.text()
+    const resolved = await resolveURL(url, lang)
+    if (resolved === undefined) throw new Error('Bail - unable to handle URL shenanigans')
+    const text = await resolved.response.text()
     cache.set(lang + url, text)
     return text
   }
@@ -274,6 +220,8 @@ router.get('/generic/product', async (ctx) => {
     const lang = ctx.request.headers.get('Accept-Language')
     const idp = ctx.request.url.searchParams.get('id')
     id = idp ? decodeURIComponent(idp) : undefined
+    id = (await resolveURL(id ?? ''))?.url ?? id
+    if (id === undefined) throw new Error('URL is required.')
     const keep = ctx.request.url.searchParams.get('keep')
     if (id?.includes('proxy.wishlily.app') || id?.includes('deno.dev')) throw new Error('Infinite proxy loop!')
 
