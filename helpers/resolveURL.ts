@@ -1,6 +1,6 @@
 import { Redis } from 'https://deno.land/x/redis@v0.26.0/mod.ts'
 import { isFetchable } from './isFetchable.ts'
-import { parse as parseLanguages } from 'https://raw.githubusercontent.com/opentable/accept-language-parser/master/index.js'
+import { preferredLanguages } from 'https://deno.land/x/negotiator@1.0.1/src/language.ts'
 
 interface ResolutionResult {
   response: string
@@ -18,7 +18,7 @@ function cookieString(cookies: Record<string, string>): string {
 }
 
 export async function resolveURL(originalUrl: string, redis: Redis, acceptLanguageHeader = 'en-US'): Promise<ResolutionResult | undefined> {
-  acceptLanguageHeader = parseLanguages(acceptLanguageHeader)[0].code + '-' + parseLanguages(acceptLanguageHeader)[0].region
+  acceptLanguageHeader = preferredLanguages(acceptLanguageHeader)?.[0] ?? 'en-US'
   const cache = await redis.get(`resolve-cache-${acceptLanguageHeader}-${originalUrl.replaceAll(':', '-')}`)
   if (cache !== undefined) {
     return JSON.parse(cache)
