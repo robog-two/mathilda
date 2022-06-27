@@ -4,8 +4,9 @@ import { Html5Entities } from 'https://deno.land/x/html_entities@v1.0/mod.js'
 import { cfetch } from '../helpers/cfetch.ts'
 import { resolveURL } from '../helpers/resolveURL.ts'
 import { getMeta } from '../helpers/getMeta.ts'
+import { Redis } from 'https://deno.land/x/redis@v0.26.0/mod.ts'
 
-export function genericEmbedRoutes(router: Router) {
+export function genericEmbedRoutes(router: Router, redis: Redis) {
   router.get('/generic/product', async (ctx) => {
     let id: string | undefined
     try {
@@ -36,7 +37,7 @@ export function genericEmbedRoutes(router: Router) {
       let results
       let document: HTMLDocument
       try {
-        results = await cfetch(`${id}`, lang ?? 'en-US,en;q=0.5')
+        results = await cfetch(`${id}`, lang ?? 'en-US,en;q=0.5', redis)
         const tempDocument = new DOMParser().parseFromString(results, 'text/html')
         if (tempDocument === null) throw new Error('Cannot load website.')
         document = tempDocument

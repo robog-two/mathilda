@@ -3,12 +3,14 @@ import { CORS } from 'https://deno.land/x/oak_cors@v0.1.1/mod.ts'
 import { amazonEmbedRoutes } from './storefronts/amazon.ts'
 import { etsyEmbedRoutes } from './storefronts/etsy.ts'
 import { genericEmbedRoutes } from './storefronts/generic.ts'
+import { getRedis } from './helpers/getRedis.ts'
 
 const router = new Router()
+const redis = await getRedis()
 
-amazonEmbedRoutes(router)
-etsyEmbedRoutes(router)
-genericEmbedRoutes(router)
+amazonEmbedRoutes(router, redis)
+etsyEmbedRoutes(router, redis)
+genericEmbedRoutes(router, redis)
 
 router.get('/', (ctx) => {
   ctx.response.status = 200

@@ -1,6 +1,7 @@
 interface ResolutionResult {
   response: Response
   url: string
+  urlTrail: Array<string>
 }
 
 function cookieString(cookies: Record<string, string>): string {
@@ -14,6 +15,7 @@ function cookieString(cookies: Record<string, string>): string {
 
 export async function resolveURL(originalUrl: string, acceptLanguageHeader = 'en-US,en;q=0.5'): Promise<ResolutionResult | undefined> {
   let response: Response | undefined
+  const trail: Array<string> = [originalUrl]
   let newURL = originalUrl
   const cookie: Record<string, string> = {}
   let tries = 0
@@ -32,6 +34,7 @@ export async function resolveURL(originalUrl: string, acceptLanguageHeader = 'en
     const loc = response.headers.get('location')
     if ((response.status === 301 || response.status === 302) && loc) {
       console.log(` |  Redirected to "${loc}"`)
+      trail.push(newURL)
       newURL = loc
     }
 
@@ -62,7 +65,8 @@ export async function resolveURL(originalUrl: string, acceptLanguageHeader = 'en
     console.log(`[X] Successfuly found final URL!`)
     return {
       response,
-      url: newURL
+      url: newURL,
+      urlTrail: trail
     }
   }
 }

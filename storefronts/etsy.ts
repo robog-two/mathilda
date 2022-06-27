@@ -2,13 +2,14 @@ import { Router, Status } from 'https://deno.land/x/oak@v10.6.0/mod.ts'
 import { DOMParser, HTMLDocument } from 'https://deno.land/x/deno_dom@v0.1.22-alpha/deno-dom-wasm.ts'
 import { Html5Entities } from 'https://deno.land/x/html_entities@v1.0/mod.js'
 import { cfetch } from '../helpers/cfetch.ts'
+import { Redis } from 'https://deno.land/x/redis@v0.26.0/mod.ts'
 
-export function etsyEmbedRoutes(router: Router) {
+export function etsyEmbedRoutes(router: Router, redis: Redis) {
   router.get('/etsy/search', async (ctx) => {
     try {
       const lang = ctx.request.headers.get('Accept-Language')
       const query = ctx.request.url.searchParams.get('q')
-      const results = await cfetch(`https://etsy.com/search?q=${query}`, lang ?? 'en-US,en;q=0.5')
+      const results = await cfetch(`https://etsy.com/search?q=${query}`, lang ?? 'en-US,en;q=0.5', redis)
       const document: HTMLDocument | null = new DOMParser().parseFromString(results, 'text/html')
       const links = document?.getElementsByClassName('v2-listing-card')
 
@@ -55,7 +56,7 @@ export function etsyEmbedRoutes(router: Router) {
     const id = ctx.request.url.searchParams.get('id')
     try {
       const lang = ctx.request.headers.get('Accept-Language')
-      const results = await cfetch(`https://etsy.com/listing/${id}`, lang ?? 'en-US,en;q=0.5')
+      const results = await cfetch(`https://etsy.com/listing/${id}`, lang ?? 'en-US,en;q=0.5', redis)
 
       const document: HTMLDocument | null = new DOMParser().parseFromString(results, 'text/html')
       const description = document?.getElementById('listing-page-cart')

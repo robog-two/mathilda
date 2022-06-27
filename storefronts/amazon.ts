@@ -2,13 +2,14 @@ import { Router, Status } from 'https://deno.land/x/oak@v10.6.0/mod.ts'
 import { DOMParser, HTMLDocument } from 'https://deno.land/x/deno_dom@v0.1.22-alpha/deno-dom-wasm.ts'
 import { Html5Entities } from 'https://deno.land/x/html_entities@v1.0/mod.js'
 import { cfetch } from '../helpers/cfetch.ts'
+import { Redis } from 'https://deno.land/x/redis@v0.26.0/mod.ts'
 
-export function amazonEmbedRoutes(router: Router) {
+export function amazonEmbedRoutes(router: Router, redis: Redis) {
   router.get('/amazon/search', async (ctx) => {
     try {
       const lang = ctx.request.headers.get('Accept-Language')
       const query = ctx.request.url.searchParams.get('q')?.replace(' ', '+')
-      const results = await cfetch(`https://amazon.com/s?k=${query}`, lang ?? 'en-US,en;q=0.5')
+      const results = await cfetch(`https://amazon.com/s?k=${query}`, lang ?? 'en-US,en;q=0.5', redis)
       const document: HTMLDocument | null = new DOMParser().parseFromString(results, 'text/html')
       const links = document?.getElementsByClassName('a-section a-spacing-base')
 
@@ -57,7 +58,7 @@ export function amazonEmbedRoutes(router: Router) {
     const id = ctx.request.url.searchParams.get('id')
     try {
       const lang = ctx.request.headers.get('Accept-Language')
-      const results = await cfetch(`https://amazon.com${id}`, lang ?? 'en-US,en;q=0.5')
+      const results = await cfetch(`https://amazon.com${id}`, lang ?? 'en-US,en;q=0.5', redis)
 
       const document: HTMLDocument | null = new DOMParser().parseFromString(results, 'text/html')
       let cover = document?.getElementById('landingImage')?.outerHTML?.match(/src=\\?"(.*?)\\?"/)?.[1]
