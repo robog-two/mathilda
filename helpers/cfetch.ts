@@ -9,7 +9,7 @@ export async function cfetch(url: string, lang: string, redis: Redis): Promise<s
   } else {
     const resolved = await resolveURL(url, redis, lang)
     if (resolved === undefined) throw new Error('Bail - unable to handle URL shenanigans')
-    const text = await resolved.response.text()
+    const text = await resolved.response
 
     const tx = redis.tx()
     // Cache this response for all URLs in the trail of redirects

@@ -2,7 +2,7 @@ import { Redis } from 'https://deno.land/x/redis@v0.26.0/mod.ts'
 import { isFetchable } from './isFetchable.ts'
 
 interface ResolutionResult {
-  response: Response
+  response: string
   url: string
   urlTrail: Array<string>
 }
@@ -74,7 +74,7 @@ export async function resolveURL(originalUrl: string, redis: Redis, acceptLangua
       console.log(`[X] Successfuly found final URL!`)
 
       const toCache = {
-        response,
+        response: await response.text(),
         url: newURL,
         urlTrail: trail
       }
