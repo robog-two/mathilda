@@ -13,7 +13,7 @@ export function genericEmbedRoutes(router: Router, redis: Redis) {
       const lang = ctx.request.headers.get('Accept-Language')
       const idp = ctx.request.url.searchParams.get('id')
       id = idp ? decodeURIComponent(idp) : undefined
-      id = (await resolveURL(id ?? ''))?.url ?? id
+      id = (await resolveURL(id ?? '', redis))?.url ?? id
       if (id === undefined) throw new Error('URL is required.')
       const keep = ctx.request.url.searchParams.get('keep')
       if (id?.includes('proxy.wishlily.app') || id?.includes('deno.dev')) throw new Error('Infinite proxy loop!')
