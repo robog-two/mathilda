@@ -43,7 +43,9 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
     }
 
     await redis.incr('last-fetch-' + domain)
-    await redis.sendCommand('EXPIRE', 'last-fetch-' + domain, 60 * 5, 'NX')
+    if (await redis.ttl('last-fetch-' + domain) <= 0) {
+      await redis.expire('last-fetch-' + domain, 60 * 5)
+    }
 
     return undefined
   } catch (e) {
