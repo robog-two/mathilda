@@ -26,10 +26,8 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
         robots = 'allow'
       }
 
-      const tx = await redis.tx()
-      tx.set(`robots-${domain}`, robots)
-      tx.expire(`robots-${domain}`, 60 * 60 * 12)
-      await tx.flush()
+      await redis.set(`robots-${domain}`, robots)
+      await redis.expire(`robots-${domain}`, 60 * 60 * 12)
     }
 
     // Robots.txt doesnt like us
@@ -44,10 +42,9 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
       return 'Rate limit exceeded. Try again in 5 minutes.'
     }
 
-    const tx = redis.tx()
-    tx.incr('last-fetch-' + domain)
-    tx.sendCommand('EXPIRE', 'last-fetch-' + domain, 60 * 5, 'NX')
-    await tx.flush()
+    await redis.incr('last-fetch-' + domain)
+    await redis.sendCommand('EXPIRE', 'last-fetch-' + domain, 60 * 5, 'NX')
+
     return undefined
   } catch (e) {
     console.log(e)

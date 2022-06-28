@@ -82,14 +82,12 @@ export async function resolveURL(originalUrl: string, redis: Redis, acceptLangua
         urlTrail: trail
       }
 
-      const tx = redis.tx()
       // Cache this response for all URLs in the trail of redirects
       for (const trailURL of trail) {
         const keyname = `resolve-cache-${acceptLanguageHeader}-${trailURL.replaceAll(':', '-')}`
-        tx.set(keyname, JSON.stringify(toCache))
-        tx.expire(keyname, 60 * 60 * 24)
+        await redis.set(keyname, JSON.stringify(toCache))
+        await redis.expire(keyname, 60 * 60 * 24)
       }
-      await tx.flush()
 
       return toCache
     }
