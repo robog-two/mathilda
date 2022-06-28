@@ -1,43 +1,56 @@
 import { Redis } from 'https://deno.land/x/redis@v0.26.0/mod.ts'
 
-export async function isFetchable(url: string, redis: Redis): Promise<boolean> {
+export async function isFetchable(url: string, redis: Redis): Promise<string | undefined> {
   try {
-    const domain = new URL(url).hostname
+    const parsed = new URL(url)
+    const domain = parsed.host.replaceAll(':', '-port-')
 
     // Check robots
     let robots = await redis.get(`robots-${domain}`)
-    // expire robots txt if it was b4 we actually assumed they could change
-    await redis.sendCommand('EXPIRE', `robots-${domain}`, 1, 'NX')
+    console.log(url)
     if (robots === undefined) {
       try {
-        const robotsTxt = await (await fetch('http://' + domain + '/robots.txt')).text()
-        robots = robotsTxt.includes('User-Agent: Mathilda\nDisallow: /') || robotsTxt.includes('User-Agent: Mathilda\r\nDisallow: /') ? 'disallow' : 'allow'
-        await redis.set(`robots-${domain}`, robots)
-        await redis.expire(`robots-${domain}`, 60 * 60 * 12)
+        const resp = await fetch('https://api.robotstxt.io/v1/allowed', {
+          method: 'POST',
+          body: JSON.stringify({
+            url: parsed.origin,
+            agent: 'Mathilda'
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        robots = (await (resp)?.json())?.allowed === false ? 'disallow' : 'allow'
       } catch (e) {
         console.log(e)
         robots = 'allow'
-        await redis.set(`robots-${domain}`, robots)
-        await redis.expire(`robots-${domain}`, 60 * 60 * 12)
       }
+
+      const tx = await redis.tx()
+      tx.set(`robots-${domain}`, robots)
+      tx.expire(`robots-${domain}`, 60 * 60 * 12)
+      await tx.flush()
     }
 
     // Robots.txt doesnt like us
-    if (robots == 'disallow') return false
+    if (robots == 'disallow') {
+      console.log('w')
+      return 'Website chose to block WishLily.'
+    }
 
     const fetchCount = await redis.get('last-fetch-' + domain)
     if (fetchCount !== undefined && parseInt(fetchCount) >= 5) {
       // Rate limit exceeded (5 reqs / 5 min)
-      return false
+      return 'Rate limit exceeded. Try again in 5 minutes.'
     }
 
     const tx = redis.tx()
     tx.incr('last-fetch-' + domain)
     tx.sendCommand('EXPIRE', 'last-fetch-' + domain, 60 * 5, 'NX')
     await tx.flush()
-    return true
+    return undefined
   } catch (e) {
     console.log(e)
-    return false
+    return e.message
   }
 }

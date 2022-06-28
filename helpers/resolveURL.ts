@@ -30,7 +30,8 @@ export async function resolveURL(originalUrl: string, redis: Redis, acceptLangua
     let tries = 0
     console.log('[ ] Starting request')
     while ((response === undefined || (response.headers.has('set-cookie') && cookie === {}) || (response.headers.has('location')) || response.status === 301 || response.status === 302) && tries < 30) {
-      if (!isFetchable(newURL, redis)) { return undefined }
+      const fetchableResult = await isFetchable(newURL, redis)
+      if (fetchableResult) throw new Error(fetchableResult) // if it's not undefined, it's an error message. rethrow.
       response = (await fetch(
         newURL,
         {

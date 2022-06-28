@@ -37,10 +37,7 @@ export function genericEmbedRoutes(router: Router, redis: Redis) {
       let results
       let document: HTMLDocument
       try {
-        results = await cfetch(`${id}`, lang ?? 'en-US,en;q=0.5', redis)
-        const tempDocument = new DOMParser().parseFromString(results, 'text/html')
-        if (tempDocument === null) throw new Error('Cannot load website.')
-        document = tempDocument
+        new URL(id)
       } catch (e) {
         if (keep !== 'true') {
           console.log('(Interpreting as a search)')
@@ -55,6 +52,11 @@ export function genericEmbedRoutes(router: Router, redis: Redis) {
           throw e // Re-throw to catch below.
         }
       }
+      results = await cfetch(`${id}`, lang ?? 'en-US,en;q=0.5', redis)
+      const tempDocument = new DOMParser().parseFromString(results, 'text/html')
+      if (tempDocument === null) throw new Error('Cannot load website.')
+      document = tempDocument
+
       const cover = getMeta(document, 'og:image') ?? getMeta(document, 'twitter:image:src')
       const title = getMeta(document, 'title') ?? getMeta(document, 'og:title') ?? getMeta(document, 'twitter:title')
       let shopifyPrice = ((getMeta(document, 'product:price:currency') == 'USD' || (getMeta(document, 'product:price:currency') === undefined && getMeta(document, 'product:price:amount'))) ? `$${getMeta(document, 'product:price:amount')}` : undefined)
