@@ -43,7 +43,7 @@ export function etsyEmbedRoutes(router: Router, redis: Redis) {
         return
       }
     } catch (e) {
-      console.log(e)
+      console.error(e)
       ctx.response.body = {
         message: e.message ?? 'Internal error occurred.',
         success: false,
@@ -72,7 +72,7 @@ export function etsyEmbedRoutes(router: Router, redis: Redis) {
         success: true,
       }
     } catch (e) {
-      console.log(e)
+      console.error(e)
       ctx.response.redirect(`${(Deno.env.get('ENVIRONMENT') === 'production' ? 'https://proxy.wishlily.app' : 'http://localhost:8080')}/generic/product?keep=true&id=https://etsy.com/listing/${id}`)
       ctx.response.status = Status.InternalServerError
     }

@@ -43,7 +43,7 @@ router.get('/embed', async (ctx) => {
 
     ctx.response.redirect(`https://imagecdn.app/v2/image/${encodeURIComponent(list[0]?.cover)}?format=webp`)
   } catch (e) {
-    console.log(e)
+    console.error(e)
     ctx.response.body = {
       message: e.message ?? 'Internal error occurred.',
       success: false,
@@ -58,11 +58,13 @@ if (Deno.env.get('ENVIRONMENT') !== 'PRODUCTION') {
   app.use(async (ctx, next) => {
     const body = ctx.request.hasBody ? await ctx.request.body({type: 'json', limit: 0}).value : undefined
     await next()
-    console.log('Request:')
-    console.log(ctx.request.method + ' ' + ctx.request.url)
-    console.log(body)
-    console.log('Response:')
-    console.log(ctx.response.body)
+    console.log([
+      'Request:',
+      ctx.request.method + ' ' + ctx.request.url,
+      body,
+      'Response:',
+      ctx.response.body
+    ])
   })
 }
 app.use(router.routes())

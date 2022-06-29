@@ -41,7 +41,7 @@ export function genericEmbedRoutes(router: Router, redis: Redis) {
       } catch (e) {
         if (keep !== 'true') {
           console.log('(Interpreting as a search)')
-          console.log(e)
+          console.error(e)
           // It's not a working URL - It's probably a search!
           ctx.response.body = {
             isSearch: true,
@@ -85,7 +85,7 @@ export function genericEmbedRoutes(router: Router, redis: Redis) {
         success: true,
       }
     } catch (e) {
-      console.log(e)
+      console.error(e)
       ctx.response.body = {
         message: e.message ?? 'Internal error occurred.',
         success: false,

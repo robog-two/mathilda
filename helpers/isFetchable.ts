@@ -22,7 +22,7 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
         })
         robots = (await (resp)?.json())?.allowed === false ? 'disallow' : 'allow'
       } catch (e) {
-        console.log(e)
+        console.error(e)
         robots = 'allow'
       }
 
@@ -32,7 +32,6 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
 
     // Robots.txt doesnt like us
     if (robots == 'disallow') {
-      console.log('w')
       return 'Website chose to block WishLily.'
     }
 
@@ -49,7 +48,7 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
 
     return undefined
   } catch (e) {
-    console.log(e)
+    console.errorerrorerrorerrorerror(e)
     return e.message
   }
 }

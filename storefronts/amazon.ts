@@ -45,7 +45,7 @@ export function amazonEmbedRoutes(router: Router, redis: Redis) {
         success: true,
       }
     } catch (e) {
-      console.log(e)
+      console.error(e)
       ctx.response.body = {
         message: e.message ?? 'Internal error occurred.',
         success: false,
@@ -84,7 +84,7 @@ export function amazonEmbedRoutes(router: Router, redis: Redis) {
           price = document?.getElementsByClassName('a-text-price')?.[0]?.textContent
         }
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
 
       try {
@@ -100,7 +100,7 @@ export function amazonEmbedRoutes(router: Router, redis: Redis) {
           cover = results?.match(/(https\:\/\/images.*?\/I\/.*?.jpg)/g)?.[0]
         }
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
 
       let bkp
@@ -111,7 +111,7 @@ export function amazonEmbedRoutes(router: Router, redis: Redis) {
         }
       } catch (e) {
         // Sometimes... I break stuff
-        console.log(e)
+        console.error(e)
       }
 
       ctx.response.body = {
@@ -122,7 +122,7 @@ export function amazonEmbedRoutes(router: Router, redis: Redis) {
         success: true,
       }
     } catch (e) {
-      console.log(e)
+      console.error(e)
       ctx.response.redirect(`${(Deno.env.get('ENVIRONMENT') === 'production' ? 'https://proxy.wishlily.app' : 'http://localhost:8080')}/generic/product?keep=true&id=https://amazon.com${id}`)
       ctx.response.status = Status.InternalServerError
     }
