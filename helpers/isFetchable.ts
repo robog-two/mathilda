@@ -37,7 +37,7 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
     }
 
     const fetchCount = await redis.get('last-fetch-' + domain)
-    if (fetchCount !== undefined && parseInt(fetchCount) >= 5) {
+    if (fetchCount !== undefined && parseInt(fetchCount) >= 5 && await redis.ttl('last-fetch-' + domain) > 0) {
       // Rate limit exceeded (5 reqs / 5 min)
       return 'Rate limit exceeded. Try again in 5 minutes.'
     }
