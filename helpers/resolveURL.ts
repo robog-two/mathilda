@@ -1,4 +1,5 @@
 import { Redis } from 'https://deno.land/x/redis@v0.26.0/mod.ts'
+import { redisTxn } from './getRedis.ts'
 import { isFetchable } from './isFetchable.ts'
 import { preferredLanguages } from 'https://deno.land/x/negotiator@1.0.1/src/language.ts'
 
@@ -85,8 +86,10 @@ export async function resolveURL(originalUrl: string, redis: Redis, acceptLangua
       // Cache this response for all URLs in the trail of redirects
       for (const trailURL of trail) {
         const keyname = `resolve-cache-${acceptLanguageHeader}-${trailURL.replaceAll(':', '-')}`
-        await redis.set(keyname, JSON.stringify(toCache))
-        await redis.expire(keyname, 60 * 60 * 24)
+        await redisTxn(async () => {
+          await redis.set(keyname, JSON.stringify(toCache))
+          await redis.expire(keyname, 60 * 60 * 24)
+        })
       }
 
       return toCache
