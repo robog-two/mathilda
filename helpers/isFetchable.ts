@@ -48,7 +48,7 @@ export async function isFetchable(url: string, redis: Redis): Promise<string | u
 
     return undefined
   } catch (e) {
-    console.errorerrorerrorerrorerror(e)
+    console.error(e)
     return e.message
   }
 }
